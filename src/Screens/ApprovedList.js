@@ -1,6 +1,6 @@
 // ApprovedList.js
-import React from 'react';
-import NotificationCard from './Components/NotificationCard';
+import React from "react";
+import NotificationCard from "./Components/NotificationCard";
 
 const ApprovedList = ({ notifications, onApprove, onReject }) => {
   return (

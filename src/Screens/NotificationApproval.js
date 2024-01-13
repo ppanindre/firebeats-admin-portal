@@ -100,7 +100,7 @@ const NotificationApproval = () => {
           where("approved", "==", approvalStatus),
           where("timestamp", ">=", parseInt(startDate.getTime())),
           where("timestamp", "<=", parseInt(endDate.getTime())),
-          limit(page * 1)
+          limit(page * 10)
         );
 
         // if (startDate && endDate) {
