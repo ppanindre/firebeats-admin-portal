@@ -166,9 +166,8 @@ const NotificationApproval = () => {
 
       await updateDoc(notificationRef, {
         ...notificationData,
-        approved: "pending",
+        approved: true,
       });
-
       setTabSwitching(true);
       fetchData();
     } catch (error) {
