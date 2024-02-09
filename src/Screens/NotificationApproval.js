@@ -15,6 +15,7 @@ import NonApprovedList from "./NonApprovedList";
 import RejectedList from "./RejectedList";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import axios from "axios";
 
 const containerStyle = {
   display: "flex",
@@ -36,6 +37,8 @@ const NotificationApproval = () => {
   const [filter, setFilter] = useState({
     Hypertension: true,
     SLEEP: true,
+    Afib: true,
+    Arrhythmia: true,
   });
   const [page, setPage] = useState(1); // State for pagination
   const [rejectedNotifications, setRejectedNotifications] = useState([]);
@@ -173,6 +176,19 @@ const NotificationApproval = () => {
     } catch (error) {
       console.error("Error updating data:", error);
     }
+
+    try {
+      axios
+        .get(
+          `https://us-central1-firebeats-43aaf.cloudfunctions.net/sendCustomMailFunction?docId=${userId}&type=5`
+        )
+        .catch((error) => {
+          console.error(error);
+        });
+      alert("Sent a mail to the user");
+    } catch {
+      alert("Could not send a mail to the user");
+    }
   };
 
   const handleReject = async (userId, notificationId, notificationData) => {
@@ -273,15 +289,11 @@ const NotificationApproval = () => {
 
       {!loading && !tabSwitching && (
         <div style={{ marginBottom: "16px" }}>
-          <button onClick={() => handleTabChange("approved")}>
-            Approved ({approvedNotifications.length})
-          </button>
+          <button onClick={() => handleTabChange("approved")}>Approved</button>
           <button onClick={() => handleTabChange("nonApproved")}>
-            Non-Approved ({nonApprovedNotifications.length})
+            Non-Approved
           </button>
-          <button onClick={() => handleTabChange("rejected")}>
-            Rejected ({rejectedNotifications.length})
-          </button>
+          <button onClick={() => handleTabChange("rejected")}>Rejected</button>
         </div>
       )}
 

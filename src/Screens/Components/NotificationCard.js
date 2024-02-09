@@ -24,6 +24,7 @@ const NotificationCard = ({
   onApprove,
   onReject,
   isApproved,
+  prediction,
 }) => {
   // console.log(date.concat(`-${data.device}`))
 
@@ -76,6 +77,8 @@ const NotificationCard = ({
 
     console.log(adjustedEndIndex + " " + adjustedStartIndex);
 
+    console.log(data);
+
     let adjustedActivityData = (fetchedActivityData ?? [])
       .slice(adjustedStartIndex, adjustedEndIndex)
       .map((data, index) => {
@@ -103,7 +106,7 @@ const NotificationCard = ({
     }
 
     setActivityData(adjustedActivityData);
-    console.log(adjustedActivityData);
+    // console.log(adjustedActivityData);
   };
 
   useEffect(() => {
@@ -131,6 +134,8 @@ const NotificationCard = ({
   return (
     <div key={notificationId} style={cardStyle}>
       <h3>User ID: {userId}</h3>
+      <p>Type: {data?.type}</p>
+
       <p>Notification ID: {notificationId}</p>
       <p>Notification Message: {data.message}</p>
       <p>Email : {userDetails?.email}</p>
@@ -146,6 +151,48 @@ const NotificationCard = ({
       )}
 
       <p>Date : {Date}</p>
+
+      {data?.hasOwnProperty("prediction") ? (
+        <p>prediction : {data.prediction}</p>
+      ) : (
+        <></>
+      )}
+
+      {data?.hasOwnProperty("Prediction_Math_AI") ? (
+        <p>Prediction_Math_AI : {data.Prediction_Math_AI}</p>
+      ) : (
+        <></>
+      )}
+
+      {data?.hasOwnProperty("Prediction_afibGroundTruth") ? (
+        <p>Prediction_afibGroundTruth : {data.Prediction_afibGroundTruth}</p>
+      ) : (
+        <></>
+      )}
+
+      {data?.hasOwnProperty("Prediction_70Epoch") ? (
+        <p>Prediction_70Epoch : {data.Prediction_70Epoch}</p>
+      ) : (
+        <></>
+      )}
+
+      {data?.hasOwnProperty("prediction_Retrain") ? (
+        <p>prediction_Retrain : {data.prediction_Retrain}</p>
+      ) : (
+        <></>
+      )}
+
+      {data?.hasOwnProperty("Prediction_Math") ? (
+        <p>Prediction_Math : {data.Prediction_Math}</p>
+      ) : (
+        <></>
+      )}
+
+      {data?.hasOwnProperty("Prediction_arrhythmia") ? (
+        <p>Prediction_arrhythmia : {data.Prediction_arrhythmia}</p>
+      ) : (
+        <></>
+      )}
 
       {/* <p>Data: {JSON.stringify(data.heartRates)}</p> */}
       <Chart heartRates={data.heartRates} />

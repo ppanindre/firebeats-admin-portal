@@ -1,8 +1,10 @@
 // NonApprovedList.js
-import React from 'react';
-import NotificationCard from './Components/NotificationCard';
+import React from "react";
+import NotificationCard from "./Components/NotificationCard";
 
 const NonApprovedList = ({ notifications, onApprove, onReject }) => {
+  console.log("notifications");
+  console.log(notifications[0]);
   return (
     <div>
       <h3>Non-Approved Notifications</h3>
