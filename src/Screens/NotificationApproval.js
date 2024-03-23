@@ -3,12 +3,14 @@ import React, { useEffect, useState } from "react";
 import { db } from "../App";
 import {
   getDocs,
+  getDoc,
   collection,
   updateDoc,
   doc,
   where,
   query,
   limit,
+  increment
 } from "firebase/firestore";
 import ApprovedList from "./ApprovedList";
 import NonApprovedList from "./NonApprovedList";
@@ -16,6 +18,9 @@ import RejectedList from "./RejectedList";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
+// import { Expo } from "expo-server-sdk";
+
+// const expo = new Expo();
 
 const containerStyle = {
   display: "flex",
@@ -28,6 +33,42 @@ const loaderStyle = {
   margin: "16px",
 };
 
+const sendNotification = async (
+  userId,
+  message,
+) => {
+
+  const notificationTokenRef = doc(db, `user/${userId}`)
+  const snapshot = await getDoc(notificationTokenRef)
+  const notificationToken = snapshot.data()
+  console.log(notificationToken.notificationToken)
+  // .firestore()
+  // .collection("user")
+  // .doc(userId)
+  // .get()
+  // .then(async (snapshot) => {
+  //   const data = snapshot.data();
+  //   const notificationToken = data.notificationToken;
+  // try {
+  //   const ticketChunk = await expo.sendPushNotificationsAsync([
+  //     {
+  //       to: notificationToken,
+  //       sound: "default",
+  //       // title: "You have a new notification",
+  //       body: message,
+  //     },
+  //   ]);
+  //   console.log(ticketChunk);
+  //   // NOTE: If a ticket contains an error code in ticket.details.error, you
+  //   // must handle it appropriately. The error codes are listed in the Expo
+  //   // documentation:
+  //   // https://docs.expo.io/push-notifications/sending-notifications/#individual-errors
+  // } catch (error) {
+  //   console.error(error);
+  // }
+  // });
+};
+
 const NotificationApproval = () => {
   const [loading, setLoading] = useState(true);
   const [tabSwitching, setTabSwitching] = useState(false);
@@ -36,9 +77,15 @@ const NotificationApproval = () => {
   const [selectedTab, setSelectedTab] = useState("approved");
   const [filter, setFilter] = useState({
     Hypertension: true,
-    SLEEP: true,
-    Afib: true,
-    Arrhythmia: true,
+    SLEEP: false,
+    Afib: false,
+    Arrhythmia: false,
+  });
+  const [deviceFilter, setDeviceFilter] = useState({
+    garmin: true,
+    apple: true,
+    Fitbit: true,
+    gfit: true,
   });
   const [page, setPage] = useState(1); // State for pagination
   const [rejectedNotifications, setRejectedNotifications] = useState([]);
@@ -56,6 +103,14 @@ const NotificationApproval = () => {
   const handleFilterChange = (event) => {
     const { name, checked } = event.target;
     setFilter((prevFilter) => ({
+      ...prevFilter,
+      [name]: checked,
+    }));
+  };
+
+  const deviceFilterChange = (event) => {
+    const { name, checked } = event.target;
+    setDeviceFilter((prevFilter) => ({
       ...prevFilter,
       [name]: checked,
     }));
@@ -167,15 +222,29 @@ const NotificationApproval = () => {
         notificationId
       );
 
+      const unreadRef = doc(
+        db,
+        `user/${userId}/notification/summary`
+      );
+
+      console.log(unreadRef[0]);
+      await updateDoc(unreadRef, {
+        unread: increment(1)
+      });
+
+
       await updateDoc(notificationRef, {
         ...notificationData,
         approved: true,
+        approvedTime: Date.now()
       });
       setTabSwitching(true);
       fetchData();
     } catch (error) {
       console.error("Error updating data:", error);
     }
+
+    sendNotification(userId, "You have a notification")
 
     try {
       axios
@@ -274,6 +343,21 @@ const NotificationApproval = () => {
           </label>
         ))}
       </div>
+
+      {/* <div style={{ marginBottom: "16px" }}>
+        <label>Device:</label>
+        {Object.keys(deviceFilter).map((key) => (
+          <label key={key} style={{ marginRight: "10px" }}>
+            <input
+              type="checkbox"
+              name={key}
+              checked={deviceFilter[key]}
+              onChange={deviceFilterChange}
+            />
+            {key}
+          </label>
+        ))}
+      </div> */}
 
       {/* <div style={{ marginBottom: '16px' }}>
         <label>Filter:</label>

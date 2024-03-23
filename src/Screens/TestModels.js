@@ -43,7 +43,7 @@ const TestModels = () => {
         }));
 
         // Upload the data to Firestore
-        await uploadDataToFirestore(numericData);
+        await uploadDataToFirestore(numericData, "heartRatesec");
         // await uploadDataToFirestore(jsonData);
 
         alert("Data uploaded successfully!");
@@ -56,7 +56,53 @@ const TestModels = () => {
       alert("Error handling file. Please try again.");
     }
   };
-  const uploadDataToFirestore = async (data) => {
+
+  const handleUploadSleep = async () => {
+    if (!file) {
+      alert("Please select a file.");
+      return;
+    }
+
+    try {
+      const fileReader = new FileReader();
+
+      fileReader.onload = async (e) => {
+        const data = e.target.result;
+        const workbook = XLSX.read(data, { type: "binary", cellDates: true });
+
+        // Assuming the first sheet is the one you want to read
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+
+        // Convert the sheet data to JSON format
+        const jsonData = XLSX.utils.sheet_to_json(sheet, {
+          raw: false,
+          dateNF: "hh:mm:ss", // Date format for timestamp columns
+          cellDates: true,
+          rawNumbers: true,
+        });
+        // Upload the data to Firestore
+        const numericData = jsonData.map((row) => ({
+          duration: parseInt(row.duration, 10),
+          sleepType: parseInt(row.sleepType, 10), // Convert 'value' to an integer
+          time: row.time,
+        }));
+
+        // Upload the data to Firestore
+        await uploadDataToFirestore(numericData, "sleep");
+        // await uploadDataToFirestore(jsonData);
+
+        alert("Data uploaded successfully!");
+      };
+
+      fileReader.readAsBinaryString(file);
+    } catch (error) {
+      console.error("Error handling file:", error);
+
+      alert("Error handling file. Please try again.");
+    }
+  };
+  const uploadDataToFirestore = async (data, type) => {
     console.log(data);
     const userId = "pbk9PftEdVVbpc10ymEeR6wgXao2";
 
@@ -66,12 +112,21 @@ const TestModels = () => {
       todayDate = `${todayDate}-${"apple"}`;
 
       // Construct the path for the 'details' document inside the 'intraday' collection
-      const detailsDocumentPath = `user/${userId}/heartRatesec/${todayDate}`;
+      const detailsDocumentPath = `user/${userId}/heartRate/${todayDate}/intraday/details`;
+      const detailsDocumentPathForSleep = `user/${userId}/sleep/${todayDate}`;
 
       // Create a new document called 'details' inside the 'intraday' collection
-      const detailsDocRef = await setDoc(doc(db, detailsDocumentPath), {
-        heartRateData: data,
-      });
+
+      if (type === "sleep") {
+        const detailsDocRef = await setDoc(doc(db, detailsDocumentPathForSleep), {
+          details: data,
+        });
+      } else if (type === "heartRatesec") {
+        const detailsDocRef = await setDoc(doc(db, detailsDocumentPath), {
+          heartRateData: data,
+        });
+      }
+
 
       alert("Data uploaded successfully!");
     } catch (error) {
@@ -83,9 +138,18 @@ const TestModels = () => {
   return (
     <div>
       <h2>Test Models</h2>
+      <h2>Heart Rates</h2>
+
       <input type="file" accept=".xlsx, .xls" onChange={handleFileChange} />
       <button onClick={handleUpload}>Upload</button>
+
+      <h2>Sleep Data</h2>
+
+      <input type="file" accept=".xlsx, .xls" onChange={handleFileChange} />
+      <button onClick={handleUploadSleep}>Upload</button>
     </div>
+
+
   );
 };
 
